@@ -6,24 +6,66 @@
 //
 
 import UIKit
+import SafariServices
 
-class BookmarksViewController: UIViewController {
+class BookmarksViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
+    @IBOutlet weak var bookmarkTableView: UITableView!
+    private var bookmarks: [Article] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Bookmarks"
 
-        // Do any additional setup after loading the view.
+        let nib = UINib(nibName: "ArticlesTableViewCell", bundle: nil)
+        bookmarkTableView.register(nib, forCellReuseIdentifier: "ArticleCell")
+            
+        bookmarkTableView.dataSource = self
+        bookmarkTableView.delegate = self
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadBookmarks()
     }
-    */
+    
+    private func loadBookmarks() {
+        bookmarks = PersistenceManager.shared.fetchBookmarkedArticles()
+        bookmarkTableView.reloadData()
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return bookmarks.count
+        }
+        
+        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "ArticleCell", for: indexPath) as? ArticlesTableViewCell else {
+                return UITableViewCell()
+            }
+            
+            let article = bookmarks[indexPath.row]
+            
+            // Check bookmark state
+            let isBookmarked = PersistenceManager.shared.isBookmarked(article)
+            cell.configure(with: article, isBookmarked: isBookmarked)
+            
+            // Handle unbookmarking directly from here
+            cell.onBookmarkTapped = { [weak self] in
+                PersistenceManager.shared.toggleBookmark(for: article)
+                self?.loadBookmarks() // reload list so removed ones disappear
+            }
+            
+            return cell
+        }
+        
+        func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+            tableView.deselectRow(at: indexPath, animated: true)
+            let article = bookmarks[indexPath.row]
+            if let url = URL(string: article.url) {
+                let safariVC = SFSafariViewController(url: url)
+                present(safariVC, animated: true)
+            }
+        }
+
 
 }

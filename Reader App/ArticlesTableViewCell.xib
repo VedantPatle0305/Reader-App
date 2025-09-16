@@ -77,6 +77,7 @@
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <connections>
                 <outlet property="authorLabel" destination="21j-Lh-xuR" id="pC8-82-J2o"/>
+                <outlet property="bookmarkImageView" destination="vv6-08-2XN" id="OYZ-om-nEu"/>
                 <outlet property="thumbNailImageView" destination="ArK-vu-mvk" id="Yqk-uV-NS3"/>
                 <outlet property="titleLabel" destination="4MW-py-8Qa" id="MJm-V3-Hia"/>
             </connections>

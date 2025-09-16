@@ -62,3 +62,40 @@ final class PersistenceManager {
         }
     }
 }
+
+
+extension PersistenceManager {
+    
+    func isBookmarked(_ article: Article) -> Bool {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "url == %@ AND isBookmarked == YES", article.url)
+        let count = (try? context.count(for: request)) ?? 0
+        return count > 0
+    }
+    
+    func toggleBookmark(for article: Article) {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "url == %@", article.url)
+        
+        if let entity = try? context.fetch(request).first {
+            entity.isBookmarked.toggle()
+            try? context.save()
+        }
+    }
+    
+    func fetchBookmarkedArticles() -> [Article] {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "isBookmarked == YES")
+        
+        if let entities = try? context.fetch(request) {
+            return entities.map {
+                Article(author: $0.author,
+                        title: $0.title ?? "",
+                        url: $0.url ?? "",
+                        urlToImage: $0.urlToImage)
+            }
+        }
+        return []
+    }
+}
+
