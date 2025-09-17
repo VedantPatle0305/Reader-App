@@ -94,7 +94,17 @@ class ArticlesViewController: UIViewController, UITableViewDelegate, UITableView
         }
         
         let article = isSearchActive ? filteredArticles[indexPath.row] : articles[indexPath.row]
-        cell.configure(with: article)
+        
+        // Check if this article is bookmarked (from Core Data)
+        let isBookmarked = PersistenceManager.shared.isBookmarked(article)
+        cell.configure(with: article, isBookmarked: isBookmarked)
+        
+        // Handle tap on bookmark
+        cell.onBookmarkTapped = { [weak self] in
+            PersistenceManager.shared.toggleBookmark(for: article)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+        
         return cell
     }
     

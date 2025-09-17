@@ -26,26 +26,34 @@ final class PersistenceManager {
 
     // Save new articles (replace old ones for now)
     func saveArticles(_ articles: [Article]) {
-        // Clear old cache first
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = ArticleEntity.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        _ = try? context.execute(deleteRequest)
-
-        // Insert new articles
         for article in articles {
-            let entity = ArticleEntity(context: context)
-            entity.title = article.title
-            entity.author = article.author
-            entity.url = article.url
-            entity.urlToImage = article.urlToImage
+            let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "url == %@", article.url)
+            
+            if let existing = try? context.fetch(request).first {
+                // ✅ Update only article info, keep bookmark
+                existing.title = article.title
+                existing.author = article.author
+                existing.urlToImage = article.urlToImage
+                // existing.isBookmarked stays the same
+            } else {
+                // ✅ Create new article
+                let entity = ArticleEntity(context: context)
+                entity.title = article.title
+                entity.author = article.author
+                entity.url = article.url
+                entity.urlToImage = article.urlToImage
+                entity.isBookmarked = false   // default
+            }
         }
-
+        
         do {
             try context.save()
         } catch {
             print("Failed to save articles: \(error)")
         }
     }
+
 
     // Load cached articles
     func fetchArticles() -> [Article] {
@@ -62,3 +70,40 @@ final class PersistenceManager {
         }
     }
 }
+
+
+extension PersistenceManager {
+    
+    func isBookmarked(_ article: Article) -> Bool {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "url == %@ AND isBookmarked == YES", article.url)
+        let count = (try? context.count(for: request)) ?? 0
+        return count > 0
+    }
+    
+    func toggleBookmark(for article: Article) {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "url == %@", article.url)
+        
+        if let entity = try? context.fetch(request).first {
+            entity.isBookmarked.toggle()
+            try? context.save()
+        }
+    }
+    
+    func fetchBookmarkedArticles() -> [Article] {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "isBookmarked == YES")
+        
+        if let entities = try? context.fetch(request) {
+            return entities.map {
+                Article(author: $0.author,
+                        title: $0.title ?? "",
+                        url: $0.url ?? "",
+                        urlToImage: $0.urlToImage)
+            }
+        }
+        return []
+    }
+}
+

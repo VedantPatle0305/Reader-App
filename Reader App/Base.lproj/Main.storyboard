@@ -31,6 +31,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Zzi-o6-lHb"/>
+                    <connections>
+                        <outlet property="bookmarkTableView" destination="sFh-wB-g5R" id="IHU-Kf-mDP"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9GT-1j-Drj" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
