@@ -26,26 +26,34 @@ final class PersistenceManager {
 
     // Save new articles (replace old ones for now)
     func saveArticles(_ articles: [Article]) {
-        // Clear old cache first
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = ArticleEntity.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        _ = try? context.execute(deleteRequest)
-
-        // Insert new articles
         for article in articles {
-            let entity = ArticleEntity(context: context)
-            entity.title = article.title
-            entity.author = article.author
-            entity.url = article.url
-            entity.urlToImage = article.urlToImage
+            let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "url == %@", article.url)
+            
+            if let existing = try? context.fetch(request).first {
+                // ✅ Update only article info, keep bookmark
+                existing.title = article.title
+                existing.author = article.author
+                existing.urlToImage = article.urlToImage
+                // existing.isBookmarked stays the same
+            } else {
+                // ✅ Create new article
+                let entity = ArticleEntity(context: context)
+                entity.title = article.title
+                entity.author = article.author
+                entity.url = article.url
+                entity.urlToImage = article.urlToImage
+                entity.isBookmarked = false   // default
+            }
         }
-
+        
         do {
             try context.save()
         } catch {
             print("Failed to save articles: \(error)")
         }
     }
+
 
     // Load cached articles
     func fetchArticles() -> [Article] {

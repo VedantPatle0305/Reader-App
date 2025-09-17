@@ -15,12 +15,15 @@ class ArticlesTableViewCell: UITableViewCell {
     @IBOutlet weak var authorLabel: UILabel!
         
     var onBookmarkTapped: (() -> Void)?
+    private var isBookmarked: Bool = false
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
         thumbNailImageView.contentMode = .scaleAspectFill
         thumbNailImageView.clipsToBounds = true
+        
+        authorLabel.textColor = .secondaryLabel
         
         bookmarkImageView.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(bookmarkTapped))
@@ -40,6 +43,8 @@ class ArticlesTableViewCell: UITableViewCell {
     func configure(with article: Article, isBookmarked: Bool) {
         titleLabel.text = article.title
         authorLabel.text = article.author ?? "Unknown"
+        
+        self.isBookmarked = isBookmarked
             
         if let urlString = article.urlToImage, let url = URL(string: urlString) {
             loadImage(from: url)
@@ -52,6 +57,10 @@ class ArticlesTableViewCell: UITableViewCell {
     }
     
     @objc private func bookmarkTapped() {
+        isBookmarked.toggle()
+        bookmarkImageView.image = UIImage(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+
+        
         onBookmarkTapped?()
     }
 

@@ -12,7 +12,10 @@ class APIService {
     private init() {}
     
     func fetchArticles(completion: @escaping (Result<[Article], Error>) -> Void){
-        let urlString = "https://newsapi.org/v2/everything?q=tesla&from=2025-08-16&sortBy=publishedAt&apiKey=1f338052353b475da09252958b298442"
+        
+        let date = Calendar.current.date(byAdding: .month, value: -1, to: Date())?.toAPIDateFormat() ?? Date().toAPIDateFormat()
+        
+        let urlString = "https://newsapi.org/v2/everything?q=tesla&from=\(date)&sortBy=publishedAt&apiKey=1f338052353b475da09252958b298442"
         
         print(urlString)
         
@@ -44,5 +47,13 @@ class APIService {
         }
         task.resume()
         
+    }
+}
+
+extension Date {
+    func toAPIDateFormat() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: self)
     }
 }
