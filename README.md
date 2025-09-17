@@ -1,6 +1,6 @@
 # Reader App
 
-An iOS application built with **UIKit** and **MVC architecture** that fetches and displays Tesla news articles.  
+An iOS application built with **UIKit** and **MVC architecture** that fetches and displays top business news of US.  
 
 ---
 
