@@ -15,7 +15,7 @@ class APIService {
         
         let date = Calendar.current.date(byAdding: .month, value: -1, to: Date())?.toAPIDateFormat() ?? Date().toAPIDateFormat()
         
-        let urlString = "https://newsapi.org/v2/everything?q=tesla&from=\(date)&sortBy=publishedAt&apiKey=1f338052353b475da09252958b298442"
+        let urlString = "https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=1f338052353b475da09252958b298442"
         
         print(urlString)
         
